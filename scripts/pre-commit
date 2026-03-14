@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Pre-commit hook for Novaris
+# Runs ktlint formatting + detekt code analysis on staged Kotlin files.
+# Install: ./gradlew installGitHook
+#
+
+echo "🔍 Running pre-commit checks..."
+
+# Get the list of staged Kotlin files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.kt$|\.kts$')
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "✅ No Kotlin files staged — skipping checks."
+    exit 0
+fi
+
+echo "📝 Staged Kotlin files:"
+echo "$STAGED_FILES"
+echo ""
+
+# ──────────────────────────────────────────────
+# Step 1: ktlint — auto-format staged files
+# ──────────────────────────────────────────────
+echo "🧹 Running ktlint format (auto-fix)..."
+./gradlew ktlintFormat --daemon --quiet 2>&1
+KTLINT_FORMAT_EXIT=$?
+
+if [ $KTLINT_FORMAT_EXIT -ne 0 ]; then
+    echo "⚠️  ktlint formatting encountered issues."
+fi
+
+# Re-add any files that ktlint may have reformatted
+for FILE in $STAGED_FILES; do
+    if [ -f "$FILE" ]; then
+        git add "$FILE"
+    fi
+done
+
+# ──────────────────────────────────────────────
+# Step 2: ktlint — verify (catch remaining issues)
+# ──────────────────────────────────────────────
+echo "🔎 Running ktlint check..."
+./gradlew ktlintCheck --daemon 2>&1
+KTLINT_EXIT=$?
+
+if [ $KTLINT_EXIT -ne 0 ]; then
+    echo ""
+    echo "❌ ktlint check failed. Please fix the issues above before committing."
+    exit 1
+fi
+echo "✅ ktlint passed."
+echo ""
+
+# ──────────────────────────────────────────────
+# Step 3: Detekt — static analysis / code smells
+# ──────────────────────────────────────────────
+echo "🕵️  Running detekt..."
+./gradlew detekt --daemon 2>&1
+DETEKT_EXIT=$?
+
+if [ $DETEKT_EXIT -ne 0 ]; then
+    echo ""
+    echo "❌ Detekt found code smells. Please fix the issues above before committing."
+    echo "   HTML report: app/build/reports/detekt/detekt.html"
+    exit 1
+fi
+echo "✅ Detekt passed."
+echo ""
+
+echo "🎉 All pre-commit checks passed!"
+exit 0
+
