@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Novaris"
 include(":app")
 include(":core:network")
+include(":core:database")
