@@ -19,10 +19,11 @@ An Android application built with modern Android development practices.
 
 ```
 Novaris/
-├── app/                    # Application module — entry point, UI, navigation
+├── app/                    # Application module — entry point, navigation
 ├── core/
-│   ├── network/            # :core:network — Retrofit, OkHttp, serialization
-│   └── database/           # :core:database — Room database, base DAOs
+│   ├── database/           # :core:database — Room database, base DAOs
+│   ├── network/            # :core:network  — Retrofit, OkHttp, serialization
+│   └── ui/                 # :core:ui       — Design system, theme, reusable composables
 ├── config/
 │   └── detekt/
 │       └── detekt.yml      # Shared Detekt rules
@@ -36,11 +37,12 @@ Novaris/
 
 ```
 :app
+ └── :core:ui           (design system, theme, shared composables)
  └── :core:network      (when feature needs API calls)
  └── :core:database     (when feature needs local persistence)
 ```
 
-Both `core` modules are **independent** — they do not depend on each other. Feature modules import only what they need.
+All `core` modules are **independent** — they do not depend on each other. Feature modules import only what they need.
 
 ## Getting Started
 
@@ -68,6 +70,7 @@ git clone <repo-url> && cd Novaris
 ```kotlin
 // In a feature module's build.gradle.kts
 dependencies {
+    implementation(project(":core:ui"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
 }

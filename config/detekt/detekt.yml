@@ -108,6 +108,8 @@ naming:
   VariableNaming:
     active: true
     variablePattern: "[a-z][A-Za-z0-9]*"
+  MatchingDeclarationName:
+    active: false
 
 performance:
   active: true
@@ -150,8 +152,7 @@ style:
   UnusedImports:
     active: true
   UnusedPrivateMember:
-    active: true
-    allowedNames: "(_|ignored|expected|serialVersionUID)"
+    active: false
   WildcardImport:
     active: false
 
